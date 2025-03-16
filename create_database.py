@@ -7,17 +7,12 @@ import nltk
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma.vectorstores import Chroma
-from langchain_openai import AzureChatOpenAI
-
-# from langchain.embeddings import OpenAIEmbeddings
-# from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.document_loaders import DirectoryLoader
+from general_utils import get_embeddings
 
 nltk.download("punkt", download_dir="~/nltk_data")
 nltk.download("averaged_perceptron_tagger", download_dir="~/nltk_data")
-
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -25,31 +20,6 @@ logging.basicConfig(level=logging.INFO)
 
 # Load environment variables. Assumes that project contains .env file with API keys
 load_dotenv()
-
-# ---- Set Azure OpenAI API key and endpoint
-azure_openai_api_key = os.environ["AZURE_OPENAI_API_KEY"]
-azure_openai_endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
-api_version = os.environ["API_VERSION"]
-deployment_name = os.environ["DEPLOYMENT_NAME"]
-# embedding_model = os.environ["EMBEDDING_MODEL"]
-
-# Initialize Azure OpenAI client
-client = AzureChatOpenAI(
-    azure_endpoint=azure_openai_endpoint,
-    api_key=azure_openai_api_key,
-    api_version=api_version,
-    deployment_name=deployment_name,
-    temperature=0.2,
-)
-
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
-# embeddings = AzureOpenAIEmbeddings(
-#     azure_endpoint=azure_openai_endpoint,
-#     azure_deployment=embedding_model,  # Ensure this is an embedding model like 'text-embedding-ada-002'
-#     openai_api_version=api_version,
-#     api_key=azure_openai_api_key,
-# )
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data/books"
@@ -94,6 +64,7 @@ def save_to_chroma(chunks: list[Document]):
         shutil.rmtree(CHROMA_PATH)
 
     # Initialize the Chroma vector store
+    embeddings = get_embeddings()
     vector_store = Chroma(
         collection_name="my_collection",
         embedding_function=embeddings,

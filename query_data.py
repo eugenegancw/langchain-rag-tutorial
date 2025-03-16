@@ -2,9 +2,9 @@ import argparse
 import os
 from dotenv import load_dotenv
 from langchain_chroma.vectorstores import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from general_utils import get_embeddings
 
 CHROMA_PATH = "chroma"
 
@@ -35,9 +35,7 @@ def main():
     args = parser.parse_args()
     query_text = args.query_text
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    embeddings = get_embeddings()
 
     db = Chroma(
         collection_name="my_collection",
